@@ -26,6 +26,9 @@ export const Navbar = () => {
             <Link to="/dashboard" className="text-gray-700 hover:text-indigo-600 px-3 py-2">
               {t('dashboard')}
             </Link>
+            <Link to="/reservations" className="text-gray-700 hover:text-indigo-600 px-3 py-2">
+              {t('ReservationList')}
+            </Link>
             <Link to="/admin" className="text-gray-700 hover:text-indigo-600 px-3 py-2">
               <Settings className="h-5 w-5" />
             </Link>

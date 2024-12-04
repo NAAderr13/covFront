@@ -92,6 +92,8 @@ export const translations = {
   phone: 'Téléphone',
   submit: 'Soumettre',
   close: 'Fermer',
+
+  ReservationList: 'Liste des réservations',
 };
 
 // Currency formatter

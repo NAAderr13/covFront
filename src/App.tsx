@@ -8,6 +8,7 @@ import { SearchResults } from './pages/SearchResults';
 import Admin from './pages/Admin'; // Assurez-vous d'importer Admin correctement avec export default dans Admin.tsx
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
+import { ReservationList } from './pages/ReservationList'; // Chemin corrigé pour ReservationList
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} /> {/* Page Admin pour la gestion */}
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/reservations" element={<ReservationList />} /> {/* Nouvelle route pour la liste des réservations */}
           </Routes>
         </main>
       </div>

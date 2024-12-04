@@ -79,4 +79,6 @@ export const translations = {
   email: 'Email',
   phone: 'Phone',
   submit: 'Submit',
+
+  ReservationList: 'Liste des réservations',
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, UserPlus, Download, Edit2, Trash2 } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
+import AdminRidesPage from '../components/admin/AdminRidesPage';  // Importation de la page des trajets
 
 interface User {
   id: number;
@@ -17,6 +18,7 @@ const Admin: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showUserForm, setShowUserForm] = useState<boolean>(false);
   const [newUser, setNewUser] = useState<User>({ id: 0, name: '', email: '', password: '' });
+  const [showRidesPage, setShowRidesPage] = useState<boolean>(false);  // Nouvel état pour gérer l'affichage de la page des trajets
   
   const navigate = useNavigate();  // Hook de redirection
   
@@ -107,9 +109,12 @@ const Admin: React.FC = () => {
               <UserPlus className="h-5 w-5 mr-2" />
               Add User
             </button>
-            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <button
+              onClick={() => setShowRidesPage(true)}  // Affiche la page des trajets
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
               <Download className="h-5 w-5 mr-2" />
-              Export
+              Manage Rides
             </button>
           </div>
         </div>
@@ -162,6 +167,9 @@ const Admin: React.FC = () => {
         </table>
       </div>
 
+      {/* Affichage de la page AdminRidesPage si l'état est activé */}
+      {showRidesPage && <AdminRidesPage />}  {/* Page des trajets */}
+      
       {/* Formulaire d'ajout d'utilisateur */}
       {showUserForm && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">

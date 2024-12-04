@@ -12,78 +12,111 @@ interface Ride {
   rules: string;
 }
 
+// Composant RideCard pour afficher un trajet individuel
 const RideCard: React.FC<{ ride: Ride }> = ({ ride }) => {
+  const reserveRide = async () => {
+    try {
+      // Données de réservation à envoyer au serveur
+      const reservationData = {
+        rideId: ride.id,            // L'ID du trajet
+        userId: 1,                  // ID utilisateur en dur pour l'exemple
+        date: ride.date,            // Date du trajet
+        destination: ride.destination, // Destination
+        origin: ride.origin,        // Origine
+        price: ride.price,          // Prix
+        rules: ride.rules,          // Règles
+        seats: ride.seats,          // Nombre de sièges
+        time: ride.time             // Heure du trajet
+      };
+
+      // Envoi de la requête de réservation
+      const response = await fetch('http://localhost:8080/api/reservations/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData),  // Envoi de toutes les informations dans le corps de la requête
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la réservation');
+
+      alert('Trajet réservé avec succès !');
+    } catch (error) {
+      console.error('Erreur de réservation:', error);
+      alert('La réservation a échoué.');
+    }
+  };
+
   return (
-    <div className="p-4 border rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow">
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-        {ride.origin} to {ride.destination}
+    <div className="p-6 border border-gray-200 rounded-lg shadow-md bg-white hover:shadow-lg transition-all duration-300">
+      <h3 className="text-lg font-bold text-gray-800 mb-3 truncate">
+        {ride.origin} → {ride.destination}
       </h3>
-      <p><strong>Date:</strong> {ride.date}</p>
-      <p><strong>Time:</strong> {ride.time}</p>
-      <p><strong>Seats Available:</strong> {ride.seats}</p>
-      <p><strong>Price:</strong> ${ride.price}</p>
-      <p><strong>Rules:</strong> {ride.rules}</p>
+      <p className="text-sm text-gray-600"><strong>Date:</strong> {ride.date}</p>
+      <p className="text-sm text-gray-600"><strong>Time:</strong> {ride.time}</p>
+      <p className="text-sm text-gray-600"><strong>Seats:</strong> {ride.seats}</p>
+      <p className="text-sm text-gray-600"><strong>Price:</strong> ${ride.price}</p>
+      <p className="text-sm text-gray-600"><strong>Rules:</strong> {ride.rules || "None specified"}</p>
+      <button
+        onClick={reserveRide}
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Réserver
+      </button>
     </div>
   );
 };
 
+// Composant principal pour la liste des trajets
 export const RideList: React.FC = () => {
-  const [rides, setRides] = useState<Ride[]>([]); // Liste des trajets
-  const [loading, setLoading] = useState<boolean>(true); // Indicateur de chargement
-  const [error, setError] = useState<string>(''); // Gestion des erreurs
+  const [rides, setRides] = useState<Ride[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
-  // Utilisation de useEffect pour charger les trajets dès que le composant est monté
+  // Charger les trajets dès le montage
   useEffect(() => {
     const fetchRides = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/rides/getall'); // Requête GET vers l'API
+        const response = await fetch('http://localhost:8080/api/rides/getall');
 
-        if (response.ok) {
-          const data = await response.json(); // Convertir la réponse en JSON
-          setRides(data); // Mettre à jour l'état des trajets
-        } else {
-          throw new Error('Failed to fetch rides'); // Gérer les erreurs de requête
-        }
+        if (!response.ok) throw new Error('Failed to fetch rides');
+
+        const data = await response.json();
+        setRides(data);
       } catch (err: any) {
-        setError('Error fetching data: ' + err.message); // Afficher une erreur si la requête échoue
+        setError(err.message);
       } finally {
-        setLoading(false); // Terminer le chargement une fois la réponse reçue
+        setLoading(false);
       }
     };
 
     fetchRides();
-  }, []); // [] signifie que l'effet s'exécute au montage du composant uniquement
+  }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Available Rides</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Available Rides</h1>
 
-      {/* Afficher un message de chargement */}
       {loading && (
-        <div className="text-center text-gray-500">
+        <div className="flex justify-center items-center text-gray-500">
           <p>Loading rides...</p>
         </div>
       )}
 
-      {/* Afficher les erreurs, s'il y en a */}
       {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+        <div className="bg-red-100 text-red-700 border border-red-500 rounded p-4 mb-6">
           <strong>Error:</strong> {error}
         </div>
       )}
 
-      {/* Afficher la liste des trajets si elle est disponible */}
       {!loading && !error && rides.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rides.map((ride) => (
             <RideCard key={ride.id} ride={ride} />
           ))}
         </div>
       )}
 
-      {/* Afficher un message si aucun trajet n'est trouvé */}
       {!loading && !error && rides.length === 0 && (
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-600">
           <p>No rides available at the moment.</p>
         </div>
       )}
