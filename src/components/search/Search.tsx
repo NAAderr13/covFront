@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Calendar } from 'lucide-react';
 import { TUNISIAN_CITIES } from '../../utils/constants';
 
+// Définir le type Ride pour les trajets
 interface Ride {
   id: number;
   origin: string;
@@ -13,6 +14,71 @@ interface Ride {
   price: number;
   rules: string;
 }
+
+// Composant RideCard pour afficher un trajet individuel
+const RideCard: React.FC<{ ride: Ride }> = ({ ride }) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const reserveRide = async () => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const reservationData = {
+        rideId: ride.id,
+        userId: 1, // ID utilisateur en dur pour l'exemple
+        date: ride.date,
+        destination: ride.destination,
+        origin: ride.origin,
+        price: ride.price,
+        rules: ride.rules,
+        seats: ride.seats,
+        time: ride.time
+      };
+
+      const response = await fetch('http://localhost:8080/api/reservations/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData),
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la réservation');
+
+      setSuccess(true);
+    } catch (error) {
+      setError('La réservation a échoué. Veuillez réessayer plus tard.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 border border-gray-200 rounded-lg shadow-md bg-white hover:shadow-lg transition-all duration-300">
+      <h3 className="text-lg font-bold text-gray-800 mb-3 truncate">
+        {ride.origin} → {ride.destination}
+      </h3>
+      <p className="text-sm text-gray-600"><strong>Date:</strong> {ride.date}</p>
+      <p className="text-sm text-gray-600"><strong>Time:</strong> {ride.time}</p>
+      <p className="text-sm text-gray-600"><strong>Seats:</strong> {ride.seats}</p>
+      <p className="text-sm text-gray-600"><strong>Price:</strong> ${ride.price}</p>
+      <p className="text-sm text-gray-600"><strong>Rules:</strong> {ride.rules || "None specified"}</p>
+
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+      {success && <div className="text-green-500 mt-2">Trajet réservé avec succès !</div>}
+
+      <button
+        onClick={reserveRide}
+        disabled={isLoading}
+        className={`mt-4 px-4 py-2 rounded ${isLoading ? 'bg-gray-500' : 'bg-blue-500'} text-white hover:bg-blue-600`}
+      >
+        {isLoading ? 'Réservation en cours...' : 'Réserver'}
+      </button>
+    </div>
+  );
+};
 
 export const Search = () => {
   const navigate = useNavigate();
@@ -25,14 +91,12 @@ export const Search = () => {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Construire l'URL pour appeler l'API
     const searchUrl = `http://localhost:8080/api/rides/search?origin=${origin}&destination=${destination}&date=${date}`;
 
     try {
       const response = await fetch(searchUrl);
 
       if (response.ok) {
-        // Vérifier si la réponse est vide
         const text = await response.text();
         if (!text) {
           setError('No rides found.');
@@ -40,12 +104,10 @@ export const Search = () => {
           return;
         }
 
-        // Essayer de convertir la réponse en JSON
         const ridesData = JSON.parse(text);
         setRides(ridesData);
-        setError('');  // Réinitialiser l'erreur
+        setError('');
       } else {
-        // Si la réponse n'est pas correcte
         const errorText = await response.text();
         setError(`Error: ${errorText}`);
         setRides([]);
@@ -120,26 +182,16 @@ export const Search = () => {
         </button>
       </form>
 
-      {/* Afficher les erreurs */}
       {error && <div className="text-red-500 mt-4">{error}</div>}
 
-      {/* Afficher les résultats */}
       {rides.length > 0 && (
         <div className="mt-4">
           <h3 className="text-xl font-bold">Rides Found</h3>
-          <ul className="list-disc ml-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {rides.map((ride) => (
-              <li key={ride.id} className="mt-2">
-                <div><strong>Origin:</strong> {ride.origin}</div>
-                <div><strong>Destination:</strong> {ride.destination}</div>
-                <div><strong>Date:</strong> {ride.date}</div>
-                <div><strong>Time:</strong> {ride.time}</div>
-                <div><strong>Seats:</strong> {ride.seats}</div>
-                <div><strong>Price:</strong> ${ride.price}</div>
-                <div><strong>Rules:</strong> {ride.rules}</div>
-              </li>
+              <RideCard key={ride.id} ride={ride} />
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
